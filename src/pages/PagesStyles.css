@@ -1,0 +1,11 @@
+.page {
+  padding: 2rem;
+  color: white;
+  background-color: #1c1c1c;
+  height: 100vh;
+}
+
+.page h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}

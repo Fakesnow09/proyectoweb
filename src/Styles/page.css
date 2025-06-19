@@ -1,0 +1,127 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+} 
+
+.page-container {
+  min-height: 100vh;
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  flex: 1;
+  margin: 0;
+}
+
+.page-content {
+  margin: 0px 0px 40px 260px;
+  background-color: rgba(30, 30, 30, 0.95);
+  padding: 40px;
+  border-radius: 16px;
+  width: calc(100% - 300px);
+  max-width: none;
+  z-index: 1;
+  position: relative;
+  color: white;
+}
+
+/* Encabezado con búsqueda */
+.page-header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header h1 {
+  font-size: 40px;
+  color: #ffffff;
+}
+
+.search-bar {
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  background-color: #3a3a3a;
+  padding: 6px 12px;
+  border-radius: 8px;
+  max-width: 300px;
+}
+
+.search-bar input {
+  background: none;
+  border: none;
+  outline: none;
+  color: white;
+  margin-right: 6px;
+  flex: 1;
+}
+
+.search-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+}
+
+/* Tabla general para todas las páginas */
+.page-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #2c2c2c;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.page-table th,
+.page-table td {
+  padding: 12px;
+  text-align: left;
+  color: #ffffff;
+}
+
+.page-table th {
+  background-color: #3a3a3a;
+  color: #ff4d4d;
+}
+
+.page-table tr:nth-child(even) {
+  background-color: #1f1f1f;
+}
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  position: relative; /* clave */
+  
+}
+
+.header-icons {
+  display: flex;
+  gap: 16px;
+  position: relative; /* necesario para que los popovers se posicionen bien */
+}
+
+.icon-wrapper {
+  position: relative;
+  
+}
+.popover p {
+  text-align: center;
+}
+.popover {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background-color: #3d3c3c;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  z-index: 999;
+  width: 200px;
+ 
+}

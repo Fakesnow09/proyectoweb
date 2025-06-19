@@ -1,0 +1,28 @@
+/* src/components/HeaderIcons.css */
+.header-icons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px;
+  position: relative;
+}
+
+.icon-wrapper {
+  position: relative;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.popup {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  background-color: rgba(30, 30, 30, 0.95);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  width: 220px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}

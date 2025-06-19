@@ -1,0 +1,39 @@
+/* Para el contenedor general */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Sidebar fijo a la izquierda */
+.sidebar {
+  width: 240px;
+  background-color: #1e1e1e;
+  color: white;
+  padding: 20px;
+  flex-shrink: 0;
+}
+
+/* Contenido principal con imagen de fondo */
+.content {
+  flex-grow: 1;
+  padding: 20px;
+  background-image: url('../images/fondo-logistica.jpg'); /* coloca tu ruta aquí */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  overflow-y: hidden;
+  position: relative;
+  
+}
+.content::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 0;
+}

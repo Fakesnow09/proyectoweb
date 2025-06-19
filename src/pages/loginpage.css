@@ -1,0 +1,115 @@
+/* Fondo general */
+html, body, #root{
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+.login-container {
+  position: relative;
+  background-image: url('/images/fondo-logistica.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+/* Caja principal */
+.login-box {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 1000px;
+  max-width: 95%;
+  min-height: 400px;
+}
+
+/* Izquierda */
+.login-left {
+  flex: 1;
+  background-color: #1c1c1c;
+  padding: 40px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.login-left h2 {
+  color: #ff4d4d;
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.register-button {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.register-button:hover {
+  background-color: rgb(236, 75, 75);
+}
+
+/* Derecha */
+.login-right {
+  flex: 1;
+  background-color: #262626;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+  color: white;
+}
+.login-right h3{
+  font-size: 23px; 
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.login-right input {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background-color: #333;
+  color: white;
+  outline: none;
+}
+
+.login-button {
+  background-color: red;
+  border: 1px solid white;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+.login-button:hover {
+  background-color: rgba(236, 75, 75)
+}
