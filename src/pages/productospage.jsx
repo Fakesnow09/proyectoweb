@@ -1,29 +1,117 @@
-import React, { useState } from "react";
+ import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
 
 function ProductosPage() {
+  const [productos, setProductos] = useState([]);
+  const [form, setForm] = useState({
+    id: "",
+    nombre: "",
+    categoria: "",
+    cantidad: "",
+    fecha_vencimiento: "",
+    marca: "",
+    precio_unitario: "",
+  });
+  const [modoEdicion, setModoEdicion] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserPopover, setShowUserPopover] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
 
-  const productosData = [
-    { id: 6, nombre: "Limpido", categoria: "Aseo", cantidad: "500 Uni", precio: "$6.000" },
-    { id: 7, nombre: "Jabón", categoria: "Aseo", cantidad: "300 Uni", precio: "$4.000" },
-    { id: 8, nombre: "Arroz", categoria: "Alimentos", cantidad: "1000 Uni", precio: "$2.500" },
-    { id: 8, nombre: "Arroz", categoria: "Alimentos", cantidad: "1000 Uni", precio: "$2.500" },
-    { id: 8, nombre: "Arroz", categoria: "Alimentos", cantidad: "1000 Uni", precio: "$2.500" },
-    { id: 8, nombre: "Arroz", categoria: "Alimentos", cantidad: "1000 Uni", precio: "$2.500" },
-    { id: 8, nombre: "Arroz", categoria: "Alimentos", cantidad: "1000 Uni", precio: "$2.500" },
-    { id: 8, nombre: "Arroz", categoria: "Alimentos", cantidad: "1000 Uni", precio: "$2.500" },
-    { id: 8, nombre: "Arroz", categoria: "Alimentos", cantidad: "1000 Uni", precio: "$2.500" },
-    // Agrega más registros si es necesario
-  ];
+  const URL = "http://localhost:8080/proyecto-logistica/productos";
 
-  const filteredData = productosData.filter((item) =>
+  useEffect(() => {
+    cargarProductos();
+  }, []);
+
+  const cargarProductos = () => {
+    fetch(URL)
+      .then((res) => res.json())
+      .then((data) => setProductos(data))
+      .catch((err) => console.error("Error al cargar productos:", err));
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const limpiarFormulario = () => {
+    setForm({
+      id: "",
+      nombre: "",
+      categoria: "",
+      cantidad: "",
+      fecha_vencimiento: "",
+      marca: "",
+      precio_unitario: "",
+    });
+    setModoEdicion(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("accion", modoEdicion ? "actualizar" : "insertar");
+    if (modoEdicion) formData.append("id", form.id);
+    formData.append("nombre", form.nombre);
+    formData.append("categoria", form.categoria);
+    formData.append("cantidad", form.cantidad);
+    formData.append("fecha_vencimiento", form.fecha_vencimiento);
+    formData.append("marca", form.marca);
+    formData.append("precio_unitario", form.precio_unitario);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          alert(data.mensaje);
+          limpiarFormulario();
+          cargarProductos();
+        }
+      })
+      .catch((err) => alert("Error al guardar: " + err));
+  };
+
+  const editar = (producto) => {
+    setForm({
+      id: producto.idProducto,
+      nombre: producto.nombre,
+      categoria: producto.categoria,
+      cantidad: producto.cantidad,
+      fecha_vencimiento: producto.fechaVencimiento,
+      marca: producto.marca,
+      precio_unitario: producto.precioUnitario,
+    });
+    setModoEdicion(true);
+  };
+
+  const eliminar = (id) => {
+    const formData = new FormData();
+    formData.append("accion", "eliminar");
+    formData.append("id", id);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.mensaje);
+        cargarProductos();
+      })
+      .catch((err) => alert("Error al eliminar: " + err));
+  };
+
+  const resultados = productos.filter((item) =>
     Object.values(item).some((value) =>
-      value.toLowerCase().includes(searchTerm.toLowerCase())
+      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -33,17 +121,14 @@ function ProductosPage() {
         <div className="page-header">
           <h1>PRODUCTOS</h1>
           <div className="header-icons">
-            <div
-              className="icon-wrapper"
-              onClick={() => {
-                setShowNotifPopover(!showNotifPopover);
-                setShowUserPopover(false);
-              }}
-            >
-              <FiBell size={40} style={{ marginRight: "16px", cursor: "pointer" }} />
+            <div className="icon-wrapper" onClick={() => {
+              setShowNotifPopover(!showNotifPopover);
+              setShowUserPopover(false);
+            }}>
+              <FiBell size={40} />
               {showNotifPopover && (
                 <div className="popover">
-                  <strong>Notificaciones</strong>
+                  <p><strong>Notificaciones</strong></p>
                   <ul>
                     <li>Producto agotado</li>
                     <li>Revisión de stock</li>
@@ -51,20 +136,16 @@ function ProductosPage() {
                 </div>
               )}
             </div>
-
-            <div
-              className="icon-wrapper"
-              onClick={() => {
-                setShowUserPopover(!showUserPopover);
-                setShowNotifPopover(false);
-              }}
-            >
-              <FiUser size={40} style={{ cursor: "pointer" }} />
+            <div className="icon-wrapper" onClick={() => {
+              setShowUserPopover(!showUserPopover);
+              setShowNotifPopover(false);
+            }}>
+              <FiUser size={40} />
               {showUserPopover && (
                 <div className="popover">
-                  <strong>Usuario</strong>
-                  <p>Juan Pérez</p>
-                  <p>juan@email.com</p>
+                  <p><strong>Usuario</strong></p>
+                  <p>Admin</p>
+                  <p>admin@email.com</p>
                 </div>
               )}
             </div>
@@ -83,24 +164,46 @@ function ProductosPage() {
           </button>
         </div>
 
+        <form className="formulario-crud" onSubmit={handleSubmit}>
+          <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
+          <input type="text" name="categoria" placeholder="Categoría" value={form.categoria} onChange={handleChange} required />
+          <input type="number" name="cantidad" placeholder="Cantidad" value={form.cantidad} onChange={handleChange} required />
+          <input type="date" name="fecha_vencimiento" value={form.fecha_vencimiento} onChange={handleChange} required />
+          <input type="text" name="marca" placeholder="Marca" value={form.marca} onChange={handleChange} required />
+          <input type="text" name="precio_unitario" placeholder="Precio" value={form.precio_unitario} onChange={handleChange} required />
+          <button type="submit">{modoEdicion ? "Actualizar" : "Insertar"}</button>
+          {modoEdicion && (
+            <button type="button" onClick={limpiarFormulario}>Cancelar</button>
+          )}
+        </form>
+
         <table className="page-table">
           <thead>
             <tr>
               <th>Id_Producto</th>
               <th>Nombre</th>
-              <th>Categoria</th>
+              <th>Categoría</th>
               <th>Cantidad</th>
-              <th>Precio Unitario</th>
+              <th>Fecha Vencimiento</th>
+              <th>Marca</th>
+              <th>Precio_unitario</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item, index) => (
-              <tr key={index}>
-                <td>{item.id}</td>
+            {resultados.map((item) => (
+              <tr key={item.idProducto}>
+                <td>{item.idProducto}</td>
                 <td>{item.nombre}</td>
                 <td>{item.categoria}</td>
                 <td>{item.cantidad}</td>
-                <td>{item.precio}</td>
+                <td>{item.fechaVencimiento}</td>
+                <td>{item.marca}</td>
+                <td>{item.precioUnitario}</td>
+                <td>
+                  <button onClick={() => editar(item)} style={{ marginRight: "5px" }}>Editar</button>
+                  <button onClick={() => eliminar(item.idProducto)} style={{ backgroundColor: "red", color: "white" }}>Eliminar</button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -111,4 +214,3 @@ function ProductosPage() {
 }
 
 export default ProductosPage;
-

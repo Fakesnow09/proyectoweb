@@ -1,30 +1,50 @@
 // src/pages/LoginPage.jsx
 
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./loginpage.css";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const [nombreCompleto, setNombreCompleto] = useState("");
+  const [numeroDocumento, setNumeroDocumento] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Usuario simulado
-    const user = {
-      nombre: "Nombre Ejemplo",
-      documento: "12345678",
-    };
+    const formData = new URLSearchParams();
+    formData.append("tipo", "login");
+    formData.append("nombreCompleto", nombreCompleto);
+    formData.append("numeroDocumento", numeroDocumento);
 
-    localStorage.setItem("user", JSON.stringify(user));
+    try {
+      const response = await fetch("http://localhost:8080/proyecto-logistica/AuthServlet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+      });
 
-    navigate("/clientes");
+      const text = await response.text();
+      console.log("Respuesta del servidor:", text);
+
+      if (text.includes("Inicio de sesión exitoso")) {
+        localStorage.setItem("user", JSON.stringify({ nombre: nombreCompleto, documento: numeroDocumento }));
+        alert("✅ Login exitoso");
+        navigate("/clientes");
+      } else {
+        alert("❌ " + text);
+      }
+    } catch (error) {
+      console.error("Error al conectar con el backend:", error);
+      alert("❌ Error al iniciar sesión");
+    }
   };
 
   return (
     <div className="login-container">
       <div className="background-overlay"></div>
-
       <div className="login-box">
         <div className="login-left">
           <h2>LOGISTICS<br />MANAGEMENT</h2>
@@ -36,12 +56,23 @@ function LoginPage() {
 
         <div className="login-right">
           <h3>Iniciar Sesión</h3>
-          <input type="text" placeholder="Nombre Completo" />
-          <input type="text" placeholder="Número de documento" />
+          <input
+            type="text"
+            placeholder="Nombre Completo"
+            value={nombreCompleto}
+            onChange={(e) => setNombreCompleto(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Número de documento"
+            value={numeroDocumento}
+            onChange={(e) => setNumeroDocumento(e.target.value)}
+          />
           <button className="login-button" onClick={handleLogin}>Ingresar</button>
         </div>
       </div>
     </div>
+
   );
 }
 

@@ -1,28 +1,109 @@
-import React, { useState } from "react";
+ import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
 
 function RutaPage() {
+  const [rutas, setRutas] = useState([]);
+  const [form, setForm] = useState({
+    id: "",
+    origen: "",
+    destino: "",
+    tiempoEstimado: "",
+    tipoVehiculo: "",
+    estado: "",
+  });
+  const [modoEdicion, setModoEdicion] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserPopover, setShowUserPopover] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
 
-  const rutaData = [
-    { id: 7, origen: "Bodega", destino: "Tienda La 6", tiempo: "5 horas", vehiculo: "Camión" },
-    { id: 8, origen: "Centro", destino: "Sucursal Norte", tiempo: "3 horas", vehiculo: "Moto" },
-    { id: 8, origen: "Centro", destino: "Sucursal Norte", tiempo: "3 horas", vehiculo: "Moto" },
-    { id: 8, origen: "Centro", destino: "Sucursal Norte", tiempo: "3 horas", vehiculo: "Moto" },
-    { id: 8, origen: "Centro", destino: "Sucursal Norte", tiempo: "3 horas", vehiculo: "Moto" },
-    { id: 8, origen: "Centro", destino: "Sucursal Norte", tiempo: "3 horas", vehiculo: "Moto" },
-    { id: 8, origen: "Centro", destino: "Sucursal Norte", tiempo: "3 horas", vehiculo: "Moto" },
-    { id: 8, origen: "Centro", destino: "Sucursal Norte", tiempo: "3 horas", vehiculo: "Moto" },
-    // Agrega más si deseas
-  ];
+  const URL = "http://localhost:8080/proyecto-logistica/ruta"; 
 
-  const filteredData = rutaData.filter((ruta) =>
-    Object.values(ruta).some((val) =>
-      val.toString().toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    cargarRutas();
+  }, []);
+
+  const cargarRutas = () => {
+    fetch(URL)
+      .then((res) => res.json())
+      .then((data) => setRutas(data))
+      .catch((err) => console.error("Error al cargar rutas:", err));
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const limpiarFormulario = () => {
+    setForm({
+      id: "",
+      origen: "",
+      destino: "",
+      tiempoEstimado: "",
+      tipoVehiculo: "",
+      estado: "",
+    });
+    setModoEdicion(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+
+    formData.append("accion", modoEdicion ? "actualizar" : "insertar");
+    if (modoEdicion) formData.append("id", form.id);
+    formData.append("origen", form.origen);
+    formData.append("destino", form.destino);
+    formData.append("tiempoEstimado", form.tiempoEstimado);
+    formData.append("tipoVehiculo", form.tipoVehiculo);
+    formData.append("estado", form.estado);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.mensaje);
+        limpiarFormulario();
+        cargarRutas();
+      })
+      .catch((err) => alert("Error al guardar: " + err));
+  };
+
+  const editar = (ruta) => {
+    setForm({
+      id: ruta.idRuta,
+      origen: ruta.origen,
+      destino: ruta.destino,
+      tiempoEstimado: ruta.tiempoEstimado,
+      tipoVehiculo: ruta.tipoVehiculo,
+      estado: ruta.estado,
+    });
+    setModoEdicion(true);
+  };
+
+  const eliminar = (id) => {
+    const formData = new FormData();
+    formData.append("accion", "eliminar");
+    formData.append("id", id);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.mensaje);
+        cargarRutas();
+      })
+      .catch((err) => alert("Error al eliminar: " + err));
+  };
+
+  const resultados = rutas.filter((r) =>
+    Object.values(r).some((val) =>
+      val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -30,35 +111,28 @@ function RutaPage() {
     <div className="page-container">
       <div className="page-content">
         <div className="page-header">
-          <h1>RUTA</h1>
+          <h1>RUTAS</h1>
           <div className="header-icons">
-            <div
-              className="icon-wrapper"
-              onClick={() => {
-                setShowNotifPopover(!showNotifPopover);
-                setShowUserPopover(false);
-              }}
-            >
-              <FiBell size={40} style={{ marginRight: "16px", cursor: "pointer" }} />
+            <div className="icon-wrapper" onClick={() => {
+              setShowNotifPopover(!showNotifPopover);
+              setShowUserPopover(false);
+            }}>
+              <FiBell size={40} />
               {showNotifPopover && (
                 <div className="popover">
                   <strong>Notificaciones</strong>
                   <ul>
                     <li>Ruta pendiente</li>
-                    <li>Ruta actualizada</li>
+                    <li>Ruta finalizada</li>
                   </ul>
                 </div>
               )}
             </div>
-
-            <div
-              className="icon-wrapper"
-              onClick={() => {
-                setShowUserPopover(!showUserPopover);
-                setShowNotifPopover(false);
-              }}
-            >
-              <FiUser size={40} style={{ cursor: "pointer" }} />
+            <div className="icon-wrapper" onClick={() => {
+              setShowUserPopover(!showUserPopover);
+              setShowNotifPopover(false);
+            }}>
+              <FiUser size={40} />
               {showUserPopover && (
                 <div className="popover">
                   <strong>Usuario</strong>
@@ -77,10 +151,20 @@ function RutaPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button className="search-button">
-            <LuSearch />
-          </button>
+          <button className="search-button"><LuSearch /></button>
         </div>
+
+        <form className="formulario-crud" onSubmit={handleSubmit}>
+          <input type="text" name="origen" placeholder="Origen" value={form.origen} onChange={handleChange} required />
+          <input type="text" name="destino" placeholder="Destino" value={form.destino} onChange={handleChange} required />
+          <input type="text" name="tiempoEstimado" placeholder="Tiempo estimado" value={form.tiempoEstimado} onChange={handleChange} required />
+          <input type="text" name="tipoVehiculo" placeholder="Vehículo" value={form.tipoVehiculo} onChange={handleChange} required />
+          <input type="text" name="estado" placeholder="Estado" value={form.estado} onChange={handleChange} required />
+          <button type="submit">{modoEdicion ? "Actualizar" : "Insertar"}</button>
+          {modoEdicion && (
+            <button type="button" onClick={limpiarFormulario}>Cancelar</button>
+          )}
+        </form>
 
         <table className="page-table">
           <thead>
@@ -88,18 +172,25 @@ function RutaPage() {
               <th>Id_Ruta</th>
               <th>Origen</th>
               <th>Destino</th>
-              <th>Tiempo_Estimado</th>
-              <th>Tipo_Vehiculo</th>
+              <th>Tiempo Estimado</th>
+              <th>Vehículo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((ruta, index) =>(
-              <tr key={index}>
-                <td>{ruta.id}</td>
-                <td>{ruta.origen}</td>
-                <td>{ruta.destino}</td>
-                <td>{ruta.tiempo}</td>
-                <td>{ruta.vehiculo}</td>
+            {resultados.map((r) => (
+              <tr key={r.idRuta}>
+                <td>{r.idRuta}</td>
+                <td>{r.origen}</td>
+                <td>{r.destino}</td>
+                <td>{r.tiempoEstimado}</td>
+                <td>{r.tipoVehiculo}</td>
+                <td>{r.estado}</td>
+                <td>
+                  <button onClick={() => editar(r)} style={{ marginRight: "5px" }}>Editar</button>
+                  <button onClick={() => eliminar(r.idRuta)} style={{ backgroundColor: "red", color: "white" }}>Eliminar</button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -110,4 +201,3 @@ function RutaPage() {
 }
 
 export default RutaPage;
-

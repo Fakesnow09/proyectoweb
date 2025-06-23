@@ -1,29 +1,105 @@
-import React, { useState } from "react";
+ import React, { useState, useEffect } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
 
 function EntregasPage() {
+  const [entregas, setEntregas] = useState([]);
+  const [form, setForm] = useState({
+    id: "",
+    idPedido: "",
+    idTransporte: "",
+    fechaSalida: "",
+    fechaLlegada: "",
+    estado: "",
+  });
+  const [modoEdicion, setModoEdicion] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserPopover, setShowUserPopover] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
 
-  const entregasData = [
-    { id: 4, pedido: 7, transporte: 8, salida: "30 Ene, 2024", llegada: "01 Feb, 2024" },
-    { id: 5, pedido: 6, transporte: 9, salida: "01 Feb, 2024", llegada: "03 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    // Puedes agregar más registros si lo deseas
-  ];
+  const URL = "http://localhost:8080/proyecto-logistica/entregas";
 
-  const filteredData = entregasData.filter((item) =>
-    Object.values(item).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    fetch(URL)
+      .then((res) => res.json())
+      .then((data) => setEntregas(data));
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const limpiarFormulario = () => {
+    setForm({
+      id: "",
+      idPedido: "",
+      idTransporte: "",
+      fechaSalida: "",
+      fechaLlegada: "",
+      estado: "",
+    });
+    setModoEdicion(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("accion", modoEdicion ? "actualizar" : "insertar");
+    if (modoEdicion) formData.append("id", form.id);
+    formData.append("idPedido", form.idPedido);
+    formData.append("idTransporte", form.idTransporte);
+    formData.append("fechaSalida", form.fechaSalida);
+    formData.append("fechaLlegada", form.fechaLlegada);
+    formData.append("estado", form.estado);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.mensaje);
+        limpiarFormulario();
+        return fetch(URL);
+      })
+      .then((res) => res.json())
+      .then((data) => setEntregas(data));
+  };
+
+  const editar = (entrega) => {
+    setForm({
+      id: entrega.idEntrega,
+      idPedido: entrega.idPedido,
+      idTransporte: entrega.idTransporte,
+      fechaSalida: entrega.fechaSalida,
+      fechaLlegada: entrega.fechaLlegada,
+      estado: entrega.estado,
+    });
+    setModoEdicion(true);
+  };
+
+  const eliminar = (id) => {
+    const formData = new FormData();
+    formData.append("accion", "eliminar");
+    formData.append("id", id);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.mensaje);
+        return fetch(URL);
+      })
+      .then((res) => res.json())
+      .then((data) => setEntregas(data));
+  };
+
+  const filteredData = entregas.filter((item) =>
+    Object.values(item).some((val) =>
+      val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -40,18 +116,17 @@ function EntregasPage() {
                 setShowUserPopover(false);
               }}
             >
-              <FiBell size={40} style={{ marginRight: "16px", cursor: "pointer" }} />
+              <FiBell size={40} />
               {showNotifPopover && (
                 <div className="popover">
                   <p><strong>Notificaciones</strong></p>
                   <ul>
-                    <li>Entrega programada</li>
-                    <li>Actualización de llegada</li>
+                    <li>Nueva entrega programada</li>
+                    <li>Entrega completada</li>
                   </ul>
                 </div>
               )}
             </div>
-
             <div
               className="icon-wrapper"
               onClick={() => {
@@ -59,7 +134,7 @@ function EntregasPage() {
                 setShowNotifPopover(false);
               }}
             >
-              <FiUser size={40} style={{ cursor: "pointer" }} />
+              <FiUser size={40} />
               {showUserPopover && (
                 <div className="popover">
                   <p><strong>Usuario</strong></p>
@@ -78,10 +153,18 @@ function EntregasPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button className="search-button">
-            <LuSearch />
-          </button>
+          <button className="search-button"><LuSearch /></button>
         </div>
+
+        <form className="formulario-crud" onSubmit={handleSubmit}>
+          <input type="number" name="idPedido" value={form.idPedido} onChange={handleChange} placeholder="Id_Pedido" required />
+          <input type="number" name="idTransporte" value={form.idTransporte} onChange={handleChange} placeholder="Id_Transporte" required />
+          <input type="date" name="fechaSalida" value={form.fechaSalida} onChange={handleChange} required />
+          <input type="date" name="fechaLlegada" value={form.fechaLlegada} onChange={handleChange} required />
+          <input type="text" name="estado" value={form.estado} onChange={handleChange} placeholder="Estado" required />
+          <button type="submit">{modoEdicion ? "Actualizar" : "Insertar"}</button>
+          {modoEdicion && <button type="button" onClick={limpiarFormulario}>Cancelar</button>}
+        </form>
 
         <table className="page-table">
           <thead>
@@ -91,16 +174,23 @@ function EntregasPage() {
               <th>Id_Transporte</th>
               <th>Fecha_salida</th>
               <th>Fecha_llegada</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item, index) => (
-              <tr key={index}>
-                <td>{item.id}</td>
-                <td>{item.pedido}</td>
-                <td>{item.transporte}</td>
-                <td>{item.salida}</td>
-                <td>{item.llegada}</td>
+            {filteredData.map((entrega) => (
+              <tr key={entrega.idEntrega}>
+                <td>{entrega.idEntrega}</td>
+                <td>{entrega.idPedido}</td>
+                <td>{entrega.idTransporte}</td>
+                <td>{entrega.fechaSalida}</td> {/* ← CORREGIDO */}
+                <td>{entrega.fechaLlegada}</td> {/* ← CORREGIDO */}
+                <td>{entrega.estado}</td>
+                <td>
+                  <button onClick={() => editar(entrega)} style={{ marginRight: "5px" }}>Editar</button>
+                  <button onClick={() => eliminar(entrega.idEntrega)} style={{ backgroundColor: "red", color: "white" }}>Eliminar</button>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -1,26 +1,98 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
 
-function Inventariospage() {
+function InventariosPage() {
+  const [inventarios, setInventarios] = useState([]);
+  const [form, setForm] = useState({
+    id: "",
+    nombre: "",
+    categoria: "",
+    cantidad: "",
+    fecha: "",
+  });
+  const [modoEdicion, setModoEdicion] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserPopover, setShowUserPopover] = useState(false);
   const [showNotifPopover, setShowNotifPopover] = useState(false);
 
-  const inventario = [
-    { id: 1, nombre: "Producto A", categoria: "Aseo", cantidad: "500", precio: "$6.000" },
-    { id: 2, nombre: "Producto B", categoria: "Alimentos", cantidad: "200", precio: "$3.500" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-    { id: 6, pedido: 8, transporte: 10, salida: "05 Feb, 2024", llegada: "08 Feb, 2024" },
-  ];
+  const URL = "http://localhost:8080/proyecto-logistica/inventarios";
 
-  const resultados = inventario.filter(item =>
-    Object.values(item).some(val =>
+  useEffect(() => {
+    cargarInventarios();
+  }, []);
+
+  const cargarInventarios = () => {
+    fetch(URL)
+      .then((res) => res.json())
+      .then((data) => setInventarios(data))
+      .catch((err) => console.error("Error al cargar inventarios:", err));
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const limpiarFormulario = () => {
+    setForm({ id: "", nombre: "", categoria: "", cantidad: "", fecha: "" });
+    setModoEdicion(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("accion", modoEdicion ? "actualizar" : "insertar");
+    if (modoEdicion) formData.append("id", form.id);
+    formData.append("nombre", form.nombre);
+    formData.append("categoria", form.categoria);
+    formData.append("cantidad", form.cantidad);
+    formData.append("fecha", form.fecha);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.mensaje);
+        limpiarFormulario();
+        cargarInventarios();
+      })
+      .catch((err) => alert("Error al guardar: " + err));
+  };
+
+  const editar = (item) => {
+    setForm({
+      id: item.idInventario,
+      nombre: item.nombre,
+      categoria: item.categoria,
+      cantidad: item.cantidadStock,
+      fecha: item.fechaIngreso,
+    });
+    setModoEdicion(true);
+  };
+
+  const eliminar = (id) => {
+    const formData = new FormData();
+    formData.append("accion", "eliminar");
+    formData.append("id", id);
+
+    fetch(URL, {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.mensaje);
+        cargarInventarios();
+      })
+      .catch((err) => alert("Error al eliminar: " + err));
+  };
+
+  const resultados = inventarios.filter((item) =>
+    Object.values(item).some((val) =>
       val.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
@@ -31,11 +103,14 @@ function Inventariospage() {
         <div className="page-header">
           <h1>INVENTARIOS</h1>
           <div className="header-icons">
-            <div className="icon-wrapper" onClick={() => {
-              setShowNotifPopover(!showNotifPopover);
-              setShowUserPopover(false);
-            }}>
-              <FiBell size={40} style={{ marginRight: "16px", cursor: "pointer" }} />
+            <div
+              className="icon-wrapper"
+              onClick={() => {
+                setShowNotifPopover(!showNotifPopover);
+                setShowUserPopover(false);
+              }}
+            >
+              <FiBell size={40} />
               {showNotifPopover && (
                 <div className="popover">
                   <p><strong>Notificaciones</strong></p>
@@ -46,11 +121,14 @@ function Inventariospage() {
                 </div>
               )}
             </div>
-            <div className="icon-wrapper" onClick={() => {
-              setShowUserPopover(!showUserPopover);
-              setShowNotifPopover(false);
-            }}>
-              <FiUser size={40} style={{ cursor: "pointer" }} />
+            <div
+              className="icon-wrapper"
+              onClick={() => {
+                setShowUserPopover(!showUserPopover);
+                setShowNotifPopover(false);
+              }}
+            >
+              <FiUser size={40} />
               {showUserPopover && (
                 <div className="popover">
                   <p><strong>Usuario</strong></p>
@@ -69,29 +147,52 @@ function Inventariospage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button className="search-button">
-            <LuSearch />
-          </button>
+          <button className="search-button"><LuSearch /></button>
         </div>
+
+        <form className="formulario-crud" onSubmit={handleSubmit}>
+          <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
+          <input type="text" name="categoria" placeholder="Categoría" value={form.categoria} onChange={handleChange} required />
+          <input type="number" name="cantidad" placeholder="Cantidad" value={form.cantidad} onChange={handleChange} required />
+          <input type="date" name="fecha" placeholder="Fecha ingreso" value={form.fecha} onChange={handleChange} required />
+          <button type="submit">{modoEdicion ? "Actualizar" : "Insertar"}</button>
+          {modoEdicion && (
+            <button type="button" onClick={limpiarFormulario}>
+              Cancelar
+            </button>
+          )}
+        </form>
 
         <table className="page-table">
           <thead>
             <tr>
-              <th>Id</th>
+              <th>Id_Inventario</th>
               <th>Nombre</th>
               <th>Categoría</th>
               <th>Cantidad</th>
-              <th>Precio</th>
+              <th>Fecha Ingreso</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {resultados.map((item) => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
+              <tr key={item.idInventario}>
+                <td>{item.idInventario}</td>
                 <td>{item.nombre}</td>
                 <td>{item.categoria}</td>
-                <td>{item.cantidad}</td>
-                <td>{item.precio}</td>
+                <td>{item.cantidadStock}</td>
+                <td>{item.fechaIngreso}</td>
+                <td>
+                  <button onClick={() => editar(item)} style={{ marginRight: "5px" }}>
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => eliminar(item.idInventario)}
+                    style={{ backgroundColor: "red", color: "white" }}
+                  >
+                    Eliminar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -101,4 +202,4 @@ function Inventariospage() {
   );
 }
 
-export default Inventariospage;
+export default InventariosPage;

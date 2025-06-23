@@ -11,10 +11,8 @@ import PedidosPage from './pages/pedidospage';
 import AlmacenPage from './pages/almacenpage';
 import CargaPage from './pages/cargapage';
 import TransportePage from './pages/transportepage';
-import VehiculoPage from './pages/vehiculopage';
 import RutaPage from './pages/rutapage';
 import EntregasPage from './pages/entregaspage';
-
 import Sidebar from './components/sidebar';
 import PrivateRoute from './routes/Privateroutes';
 
@@ -107,16 +105,6 @@ function App() {
             <PrivateRoute>
               <PrivateLayout>
                 <TransportePage />
-              </PrivateLayout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/vehiculo"
-          element={
-            <PrivateRoute>
-              <PrivateLayout>
-                <VehiculoPage />
               </PrivateLayout>
             </PrivateRoute>
           }
