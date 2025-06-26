@@ -26,9 +26,9 @@ function Sidebar() {
         <li><Link to="/inventarios">Inventarios</Link></li>
         <li><Link to="/pedidos">Pedidos</Link></li>
         <li><Link to="/almacen">Almacén</Link></li>
+        <li><Link to="/ruta">Ruta</Link></li>
         <li><Link to="/transporte">Transporte</Link></li>
         <li><Link to="/carga">Carga</Link></li>
-        <li><Link to="/ruta">Ruta</Link></li>
         <li><Link to="/entregas">Entregas</Link></li>
       </ul>
 
