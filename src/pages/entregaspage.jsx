@@ -179,21 +179,28 @@ function EntregasPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((entrega) => (
+              {filteredData.map((entrega) => (
               <tr key={entrega.idEntrega}>
-                <td>{entrega.idEntrega}</td>
-                <td>{entrega.idPedido}</td>
-                <td>{entrega.idTransporte}</td>
-                <td>{entrega.fechaSalida}</td> {/* ← CORREGIDO */}
-                <td>{entrega.fechaLlegada}</td> {/* ← CORREGIDO */}
-                <td>{entrega.estado}</td>
-                <td>
-                  <button onClick={() => editar(entrega)} style={{ marginRight: "5px" }}>Editar</button>
-                  <button onClick={() => eliminar(entrega.idEntrega)} style={{ backgroundColor: "red", color: "white" }}>Eliminar</button>
-                </td>
+              <td>{entrega.idEntrega}</td>
+              <td>{entrega.idPedido}</td>
+              <td>{entrega.idTransporte}</td>
+              <td>{entrega.fechaSalida}</td>
+              <td>{entrega.fechaLlegada}</td>
+              <td>{entrega.estado}</td>
+              <td>
+              <button onClick={() => editar(entrega)} style={{ marginRight: "5px" }}>
+               Editar
+              </button>
+               <button
+              onClick={() => eliminar(entrega.idEntrega)}
+              style={{ backgroundColor: "red", color: "white" }}
+              >
+              Eliminar
+              </button>
+              </td>
               </tr>
-            ))}
-          </tbody>
+               ))}
+           </tbody>
         </table>
       </div>
     </div>
