@@ -1,7 +1,9 @@
- import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import * as XLSX from "xlsx"; 
+import { saveAs } from 'file-saver';
 
 function TransportePage() {
   const [transportes, setTransportes] = useState([]);
@@ -101,6 +103,25 @@ function TransportePage() {
       .catch((err) => alert("Error al eliminar: " + err));
   };
 
+  const exportarAExcel = () => {
+    const datosExportar = transportes.map((item) => ({
+      "Id_Transporte": item.idTransporte,
+      "Vehiculo": item.Vehiculo,
+      "Id_Ruta": item.idRuta,
+      "Estado": item.Estado,
+      "Fecha_Salida": item.fechaSalida,
+      "Fecha_Llegada": item.fechaLlegada,
+    }));
+  
+    const worksheet = XLSX.utils.json_to_sheet(datosExportar);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transporte");
+  
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    saveAs(blob, `Reporte_Transporte_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
   const resultados = transportes.filter((t) =>
     Object.values(t).some((val) =>
       val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
@@ -166,6 +187,8 @@ function TransportePage() {
           )}
         </form>
 
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -195,6 +218,16 @@ function TransportePage() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
+
+           <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+          
+           </div>
+
       </div>
     </div>
   );

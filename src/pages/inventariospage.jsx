@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+
 
 function InventariosPage() {
   const [inventarios, setInventarios] = useState([]);
@@ -91,6 +94,26 @@ function InventariosPage() {
       .catch((err) => alert("Error al eliminar: " + err));
   };
 
+  const exportarAExcel = () => {
+  const datosExportar = resultados.map((item) => ({
+    "Id_Inventario": item.idInventario,
+    "Nombre": item.Nombre,
+    "Categoría": item.Categoria,
+    "Cantidad": item.CantidadStock,
+    "Fecha_Ingreso": item.FechaIngreso,
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(datosExportar);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Inventarios");
+
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/octet-stream' });
+  saveAs(blob, `Reporte_Inventarios_${new Date().toISOString().split("T")[0]}.xlsx`);
+};
+
+
+
   const resultados = inventarios.filter((item) =>
     Object.values(item).some((val) =>
       val.toString().toLowerCase().includes(searchTerm.toLowerCase())
@@ -163,6 +186,10 @@ function InventariosPage() {
           )}
         </form>
 
+
+        
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -197,6 +224,15 @@ function InventariosPage() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
+
+           <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+           </div>
+
       </div>
     </div>
   );

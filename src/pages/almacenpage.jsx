@@ -2,6 +2,9 @@
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 
 function AlmacenPage() {
   const [almacenData, setAlmacenData] = useState([]);
@@ -25,8 +28,7 @@ function AlmacenPage() {
   };
 
   const limpiarFormulario = () => {
-    setForm({ id: "", nombre
-      : "", telefono: "", direccion: "", ciudad: "" });
+    setForm({ id: "", nombre: "", telefono: "", direccion: "", ciudad: "" });
     setModoEdicion(false);
   };
 
@@ -49,7 +51,7 @@ function AlmacenPage() {
       .then(data => {
         alert(data.mensaje);
         limpiarFormulario();
-        return fetch(URL); // Recargar datos
+        return fetch(URL);
       })
       .then(res => res.json())
       .then(data => setAlmacenData(data));
@@ -84,11 +86,33 @@ function AlmacenPage() {
       .then(data => setAlmacenData(data));
   };
 
-  const filteredData = almacenData.filter((a) =>
-    Object.values(a).some((val) =>
-      val.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+ const filteredData = almacenData.filter((a) =>
+  searchTerm === "" 
+    ? true 
+    : a.idAlmacen.toString().includes(searchTerm) ||
+      a.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+
+
+  // 👉 Exportar a Excel
+  const exportarAExcel = () => {
+  const datos = filteredData.map(a => ({
+    "ID Almacén": a.idAlmacen,
+    "Nombre": a.nombre,
+    "Teléfono": a.telefono,
+    "Dirección": a.direccion,
+    "Ciudad": a.ciudad
+  }));
+  
+  const ws = XLSX.utils.json_to_sheet(datos);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Almacenes");
+
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/octet-stream' });
+  saveAs(blob, `Reporte_Almacen_${new Date().toISOString().split('T')[0]}.xlsx`);
+};
 
   return (
     <div className="page-container">
@@ -146,7 +170,9 @@ function AlmacenPage() {
           <button type="submit">{modoEdicion ? "Actualizar" : "Insertar"}</button>
           {modoEdicion && <button type="button" onClick={limpiarFormulario}>Cancelar</button>}
         </form>
-
+        
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -176,6 +202,16 @@ function AlmacenPage() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
+        
+        {/* Botón para imprimir reporte */}
+           <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+            
+           </div>
       </div>
     </div>
   );

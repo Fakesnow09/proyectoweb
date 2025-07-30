@@ -1,24 +1,22 @@
-// src/pages/LoginPage.jsx
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./loginpage.css";
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [nombreCompleto, setNombreCompleto] = useState("");
   const [numeroDocumento, setNumeroDocumento] = useState("");
+  const [contrasena, setContrasena] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     const formData = new URLSearchParams();
     formData.append("tipo", "login");
-    formData.append("nombreCompleto", nombreCompleto);
     formData.append("numeroDocumento", numeroDocumento);
+    formData.append("contrasena", contrasena); // Este debe coincidir con el backend
 
     try {
-      const response = await fetch("http://localhost:8080/proyecto-logistica/AuthServlet", {
+      const response = await fetch("http://localhost:8080/proyecto-logistica/UsuarioServlet", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -30,7 +28,7 @@ function LoginPage() {
       console.log("Respuesta del servidor:", text);
 
       if (text.includes("Inicio de sesión exitoso")) {
-        localStorage.setItem("user", JSON.stringify({ nombre: nombreCompleto, documento: numeroDocumento }));
+        localStorage.setItem("user", JSON.stringify({ documento: numeroDocumento }));
         alert("✅ Login exitoso");
         navigate("/clientes");
       } else {
@@ -58,21 +56,20 @@ function LoginPage() {
           <h3>Iniciar Sesión</h3>
           <input
             type="text"
-            placeholder="Nombre Completo"
-            value={nombreCompleto}
-            onChange={(e) => setNombreCompleto(e.target.value)}
+            placeholder="Número de Documento"
+            value={numeroDocumento}
+            onChange={(e) => setNumeroDocumento(e.target.value)}
           />
           <input
             type="password"
-            placeholder="Número de documento"
-            value={numeroDocumento}
-            onChange={(e) => setNumeroDocumento(e.target.value)}
+            placeholder="Contraseña"
+            value={contrasena}
+            onChange={(e) => setContrasena(e.target.value)}
           />
           <button className="login-button" onClick={handleLogin}>Ingresar</button>
         </div>
       </div>
     </div>
-
   );
 }
 

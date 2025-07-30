@@ -1,7 +1,9 @@
- import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
 
 function EntregasPage() {
   const [entregas, setEntregas] = useState([]);
@@ -97,6 +99,24 @@ function EntregasPage() {
       .then((data) => setEntregas(data));
   };
 
+  const exportarAExcel = () => {
+  const datos = filteredData.map( (item)=> ({
+    "Id_Entrega": item.idEntrega,
+    "Id_Pedido": item.idPedido,
+    "Id_Transporte": item.idTransporte,
+    "Fecha_Salida": item.fechaSalida,
+    "Fecha_Llegada": item.fechaLlegada,
+    Estado: item.estado,
+  }));
+  const ws = XLSX.utils.json_to_sheet(datos);
+       const wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, "Entregas");
+     
+       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+       const blob = new Blob([wbout], { type: 'application/octet-stream' });
+       saveAs(blob, `Reporte_Entregas_${new Date().toISOString().split('T')[0]}.xlsx`);
+     };
+
   const filteredData = entregas.filter((item) =>
     Object.values(item).some((val) =>
       val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
@@ -109,13 +129,10 @@ function EntregasPage() {
         <div className="page-header">
           <h1>ENTREGAS</h1>
           <div className="header-icons">
-            <div
-              className="icon-wrapper"
-              onClick={() => {
-                setShowNotifPopover(!showNotifPopover);
-                setShowUserPopover(false);
-              }}
-            >
+            <div className="icon-wrapper" onClick={() => {
+              setShowNotifPopover(!showNotifPopover);
+              setShowUserPopover(false);
+            }}>
               <FiBell size={40} />
               {showNotifPopover && (
                 <div className="popover">
@@ -127,13 +144,10 @@ function EntregasPage() {
                 </div>
               )}
             </div>
-            <div
-              className="icon-wrapper"
-              onClick={() => {
-                setShowUserPopover(!showUserPopover);
-                setShowNotifPopover(false);
-              }}
-            >
+            <div className="icon-wrapper" onClick={() => {
+              setShowUserPopover(!showUserPopover);
+              setShowNotifPopover(false);
+            }}>
               <FiUser size={40} />
               {showUserPopover && (
                 <div className="popover">
@@ -147,12 +161,7 @@ function EntregasPage() {
         </div>
 
         <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <input type="text" placeholder="Buscar..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           <button className="search-button"><LuSearch /></button>
         </div>
 
@@ -166,6 +175,8 @@ function EntregasPage() {
           {modoEdicion && <button type="button" onClick={limpiarFormulario}>Cancelar</button>}
         </form>
 
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -179,29 +190,35 @@ function EntregasPage() {
             </tr>
           </thead>
           <tbody>
-              {filteredData.map((entrega) => (
+            {filteredData.map((entrega) => (
               <tr key={entrega.idEntrega}>
-              <td>{entrega.idEntrega}</td>
-              <td>{entrega.idPedido}</td>
-              <td>{entrega.idTransporte}</td>
-              <td>{entrega.fechaSalida}</td>
-              <td>{entrega.fechaLlegada}</td>
-              <td>{entrega.estado}</td>
-              <td>
-              <button onClick={() => editar(entrega)} style={{ marginRight: "5px" }}>
-               Editar
-              </button>
-               <button
-              onClick={() => eliminar(entrega.idEntrega)}
-              style={{ backgroundColor: "red", color: "white" }}
-              >
-              Eliminar
-              </button>
-              </td>
+                <td>{entrega.idEntrega}</td>
+                <td>{entrega.idPedido}</td>
+                <td>{entrega.idTransporte}</td>
+                <td>{entrega.fechaSalida}</td>
+                <td>{entrega.fechaLlegada}</td>
+                <td>{entrega.estado}</td>
+                <td>
+                  <button onClick={() => editar(entrega)} style={{ marginRight: "5px" }}>
+                    Editar
+                  </button>
+                  <button onClick={() => eliminar(entrega.idEntrega)} style={{ backgroundColor: "red", color: "white" }}>
+                    Eliminar
+                  </button>
+                </td>
               </tr>
-               ))}
-           </tbody>
+            ))}
+          </tbody>
         </table>
+        </div>
+        </div>
+
+         <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+            
+           </div>
       </div>
     </div>
   );

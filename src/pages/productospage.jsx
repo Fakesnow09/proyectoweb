@@ -1,7 +1,9 @@
- import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import * as XLSX from "xlsx"; // ← Importación añadida
+import { saveAs } from 'file-saver';
 
 function ProductosPage() {
   const [productos, setProductos] = useState([]);
@@ -109,6 +111,27 @@ function ProductosPage() {
       .catch((err) => alert("Error al eliminar: " + err));
   };
 
+const exportarAExcel = () => {
+  const datosExportar = productos.map((item) => ({
+    "Id_Producto": item.idProducto,
+    "Nombre": item.Nombre,
+    "Categoria": item.Categoria,
+    "Cantidad": item.Cantidad,
+    "Fecha_Vencimiento": item.Fecha_Vencimiento,
+    "Marca": item.Marca,
+    "Precio_Unitario": item.Precio_Unitario
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(datosExportar);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Productos");
+
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/octet-stream' });
+  saveAs(blob, `Reporte_Productos_${new Date().toISOString().split("T")[0]}.xlsx`);
+};
+
+
   const resultados = productos.filter((item) =>
     Object.values(item).some((value) =>
       value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
@@ -176,7 +199,8 @@ function ProductosPage() {
             <button type="button" onClick={limpiarFormulario}>Cancelar</button>
           )}
         </form>
-
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -208,6 +232,16 @@ function ProductosPage() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
+
+        {/* ✅ Botón Exportar debajo de la tabla */}
+           <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+            </div>
+
       </div>
     </div>
   );

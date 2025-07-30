@@ -1,7 +1,9 @@
- import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import * as XLSX from "xlsx"; // ← AÑADIDO para exportar
+import { saveAs } from 'file-saver';
 
 function RutaPage() {
   const [rutas, setRutas] = useState([]);
@@ -101,6 +103,25 @@ function RutaPage() {
       .catch((err) => alert("Error al eliminar: " + err));
   };
 
+ const exportarAExcel = () => {
+  const datosExportar = rutas.map((item) => ({
+    "Id_Ruta": item.idRuta,
+    "Origen": item.origen,
+    "Destino": item.destino,
+    "Tipo_Vehiculo": item.Tipo_Vehiculo,
+    "Tiempo_Estimado": item.tiempoEstimado,
+    "Estado": item.estado,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(datosExportar);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Rutas");
+
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/octet-stream' });
+  saveAs(blob, `Reporte_Rutas_${new Date().toISOString().split("T")[0]}.xlsx`);
+};
+
   const resultados = rutas.filter((r) =>
     Object.values(r).some((val) =>
       val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
@@ -166,6 +187,8 @@ function RutaPage() {
           )}
         </form>
 
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -195,6 +218,17 @@ function RutaPage() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
+
+        {/* ✅ Botón Exportar debajo de la tabla */}
+           <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+            
+           </div>
+
       </div>
     </div>
   );

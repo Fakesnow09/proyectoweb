@@ -1,7 +1,9 @@
- import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import * as XLSX from "xlsx";
+import { saveAs } from 'file-saver';
 
 function PedidosPage() {
   const [pedidos, setPedidos] = useState([]);
@@ -97,6 +99,27 @@ function PedidosPage() {
       .catch((err) => alert("Error al eliminar: " + err));
   };
 
+  const exportarAExcel = () => {
+  const datosExportar = pedidos.map((item) => ({
+    "Id_Pedido": item.idPedido,
+    "Cliente": item.idCliente,
+    "Producto": item.idProducto,
+    "Cantidad": item.cantidad,
+    "Estado": item.estado,
+    "Fecha_Pedido": item.fechaPedido,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(datosExportar);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos");
+
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/octet-stream' });
+  saveAs(blob, `Reporte_Pedidos_${new Date().toISOString().split("T")[0]}.xlsx`);
+};
+
+
+
   const resultados = pedidos.filter((item) =>
     Object.values(item).some((val) =>
       val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
@@ -171,6 +194,8 @@ function PedidosPage() {
           )}
         </form>
 
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -205,9 +230,20 @@ function PedidosPage() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
+
+        {/* ✅ Botón Exportar */}
+           <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+             
+           </div>
       </div>
     </div>
   );
 }
 
 export default PedidosPage;
+

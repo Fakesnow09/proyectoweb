@@ -21,7 +21,7 @@ function RegisterPage() {
     formData.append("contrasena", contrasena);
 
     try {
-      const response = await fetch("http://localhost:8080/proyecto-logistica/AuthServlet", {
+      const response = await fetch("http://localhost:8080/proyecto-logistica/UsuarioServlet", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

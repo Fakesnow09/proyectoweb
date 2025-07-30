@@ -1,7 +1,9 @@
- import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "../Styles/page.css";
 import { LuSearch } from "react-icons/lu";
 import { FiBell, FiUser } from "react-icons/fi";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
 
 function ClientesPage() {
   const [clientes, setClientes] = useState([]);
@@ -92,6 +94,26 @@ function ClientesPage() {
     )
   );
 
+  const exportarAExcel = () => {
+     const datos = filteredData.map(a => ({
+       "Id_Cliente": a.idCliente,
+       "Nombre": a.Nombre,
+       "Apellido": a.Apellido,
+       "Correo": a.Correo,
+       "Telefono": a.Telefono,
+       "Direccion": a.Direccion,
+       "Ciudad": a.Ciudad
+     }));
+     
+     const ws = XLSX.utils.json_to_sheet(datos);
+     const wb = XLSX.utils.book_new();
+     XLSX.utils.book_append_sheet(wb, ws, "clientes");
+   
+     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+     const blob = new Blob([wbout], { type: 'application/octet-stream' });
+     saveAs(blob, `Reporte_Clientes_${new Date().toISOString().split('T')[0]}.xlsx`);
+   };
+
   return (
     <div className="page-container">
       <div className="page-content">
@@ -138,7 +160,9 @@ function ClientesPage() {
           <button type="submit">{modoEdicion ? "Actualizar" : "Insertar"}</button>
           {modoEdicion && <button type="button" onClick={limpiarFormulario}>Cancelar</button>}
         </form>
-
+        
+        <div className="table-container">
+        <div className="scroll-wrapper">
         <table className="page-table">
           <thead>
             <tr>
@@ -170,6 +194,14 @@ function ClientesPage() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
+
+           <div className="formulario-crud" style={{ marginTop: '20px' }}>
+              <button className="export-button" onClick={exportarAExcel}>
+               Imprimir reporte
+              </button>
+           </div>
       </div>
     </div>
   );
